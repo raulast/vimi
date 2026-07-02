@@ -17,13 +17,13 @@ After installation, type `vimi` to open your personal IDE. Type `vim` to open th
 ### Linux / macOS
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/raulast/vimi/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/install.sh | sh
 ```
 
 ### Windows (PowerShell native)
 
 ```powershell
-irm https://raw.githubusercontent.com/raulast/vimi/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/raulast/vimi/master/install.ps1 | iex
 ```
 
 > **ExecutionPolicy note**: if the command above is blocked, run this first in an admin PowerShell, then retry:
@@ -120,14 +120,14 @@ By default, the installer sets up CoC extensions for all 9 supported languages. 
 ### Linux / macOS
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/raulast/vimi/main/install.sh | sh -s -- --langs go,python,ts
+curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/install.sh | sh -s -- --langs go,python,ts
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
 $env:VIMI_LANGS = "go,python,ts"
-irm https://raw.githubusercontent.com/raulast/vimi/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/raulast/vimi/master/install.ps1 | iex
 ```
 
 **Available language keys:**

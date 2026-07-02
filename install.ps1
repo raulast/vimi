@@ -1,6 +1,6 @@
 # vimi — Isolated Vim IDE installer for Windows (PowerShell)
-# Usage: irm https://raw.githubusercontent.com/raulast/vimi/main/install.ps1 | iex
-# Usage with flags: $env:VIMI_LANGS="go,python,ts"; irm https://raw.githubusercontent.com/raulast/vimi/main/install.ps1 | iex
+# Usage: irm https://raw.githubusercontent.com/raulast/vimi/master/install.ps1 | iex
+# Usage with flags: $env:VIMI_LANGS="go,python,ts"; irm https://raw.githubusercontent.com/raulast/vimi/master/install.ps1 | iex
 #
 # Options (set as environment variables before piping):
 #   $env:VIMI_LANGS = "go,python,ts"   # Comma-separated CoC extension keys
@@ -162,7 +162,7 @@ function Install-Vim {
     Write-VimInfo "  Download: https://www.vim.org/download.php"
     Write-Host ""
     Write-VimInfo "After installing Vim, re-run this installer:"
-    Write-VimInfo "  irm https://raw.githubusercontent.com/raulast/vimi/main/install.ps1 | iex"
+    Write-VimInfo "  irm https://raw.githubusercontent.com/raulast/vimi/master/install.ps1 | iex"
     exit 1
 }
 
