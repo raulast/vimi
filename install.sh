@@ -521,6 +521,28 @@ print_final_success() {
 }
 
 # ==========================================
+# ZELLIJ PROMPT
+# ==========================================
+prompt_zellij() {
+    # Skip when running non-interactively (e.g. curl | sh)
+    [ -t 0 ] || return 0
+
+    printf '\n'
+    print_info "─────────────────────────────────────────"
+    printf '[zellij] Install Zellij terminal multiplexer? (y/N) '
+    read -r _zellij_ans
+    case "$_zellij_ans" in
+        [yY])
+            sh -c "$(curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/zellij/install.sh)"
+            ;;
+        *)
+            print_info "Skipping Zellij. Install anytime:"
+            printf '    curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/zellij/install.sh | sh\n'
+            ;;
+    esac
+}
+
+# ==========================================
 # MAIN
 # ==========================================
 main() {
@@ -539,6 +561,7 @@ main() {
     add_alias
     check_lsp_deps
     print_final_success
+    prompt_zellij
 }
 
 main "$@"

@@ -405,6 +405,24 @@ function Write-FinalSuccess {
 }
 
 # ==========================================
+# ZELLIJ PROMPT
+# ==========================================
+function Invoke-ZellijPrompt {
+    # Skip when stdin is not interactive (piped execution)
+    if (-not [Environment]::UserInteractive) { return }
+
+    Write-Host ""
+    Write-VimInfo "─────────────────────────────────────────"
+    $ans = Read-Host "[zellij] Install Zellij terminal multiplexer? (y/N)"
+    if ($ans -match '^[yY]$') {
+        Invoke-Expression (Invoke-RestMethod "https://raw.githubusercontent.com/raulast/vimi/master/zellij/install.ps1")
+    } else {
+        Write-VimInfo "Skipping Zellij. Install anytime:"
+        Write-Host "    irm https://raw.githubusercontent.com/raulast/vimi/master/zellij/install.ps1 | iex" -ForegroundColor Cyan
+    }
+}
+
+# ==========================================
 # MAIN
 # ==========================================
 function Main {
@@ -423,6 +441,7 @@ function Main {
     Add-VimAlias
     Test-LspDeps
     Write-FinalSuccess
+    Invoke-ZellijPrompt
 }
 
 Main
