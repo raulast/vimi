@@ -90,11 +90,11 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
 " LSP client (Vim 8 compatible)
-Plug 'prabirshaker/vim-lsp'
+Plug 'prabirshrestha/vim-lsp'
 " Auto-installs language servers on first file open (gopls, pyright, clangd, etc.)
 Plug 'mattn/vim-lsp-settings'
-Plug 'prabirshaker/asyncomplete.vim'
-Plug 'prabirshaker/asyncomplete-lsp.vim'
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/asyncomplete-lsp.vim'
 
 " Linting + diagnostics (replaces CoC diagnostics on Vim 8)
 Plug 'dense-analysis/ale'
