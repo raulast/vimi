@@ -1,7 +1,7 @@
 #!/bin/sh
 # vimi — Isolated Vim IDE installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/raulast/vimi/main/install.sh | sh
-# Usage: curl -fsSL https://raw.githubusercontent.com/raulast/vimi/main/install.sh | sh -s -- --langs go,python,ts
+# Usage: curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/install.sh | sh
+# Usage: curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/install.sh | sh -s -- --langs go,python,ts
 #
 # Options:
 #   --langs <list>   Comma-separated CoC extension keys to install.
@@ -165,7 +165,7 @@ detect_os() {
         *)
             print_error "Unsupported OS: $_uname"
             print_error "This installer supports Linux and macOS only."
-            print_error "For Windows, use: irm https://raw.githubusercontent.com/raulast/vimi/main/install.ps1 | iex"
+            print_error "For Windows, use: irm https://raw.githubusercontent.com/raulast/vimi/master/install.ps1 | iex"
             exit 1
             ;;
     esac
@@ -222,7 +222,7 @@ install_vim() {
     fi
     printf '\n'
     print_info "After installing Vim, re-run this installer:"
-    print_info "  curl -fsSL https://raw.githubusercontent.com/raulast/vimi/main/install.sh | sh"
+    print_info "  curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/install.sh | sh"
     exit 1
 }
 
