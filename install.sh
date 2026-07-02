@@ -293,29 +293,54 @@ write_vimrc() {
 
     # CoC stack: download base then patch g:coc_global_extensions with selected langs
     _tmp=$(mktemp)
+    _out=$(mktemp)
     curl -fsSL "$RAW_BASE/vimrc.coc" -o "$_tmp"
 
-    # Build the extensions list from selected LANGS
-    _exts=""
+    # Build the coc_global_extensions block as a temp file
+    _exts_file=$(mktemp)
+    printf 'let g:coc_global_extensions = [\n' > "$_exts_file"
+    _last_ext=""
     for _lang in $LANGS; do
         _ext=$(lang_to_coc "$_lang")
         if [ -n "$_ext" ]; then
-            _exts="${_exts}  \\ '$_ext',\n"
+            # Flush previous line (so we can omit trailing comma on last)
+            if [ -n "$_last_ext" ]; then
+                printf "  \\\\ '%s',\n" "$_last_ext" >> "$_exts_file"
+            fi
+            _last_ext="$_ext"
         fi
     done
-    # Remove trailing comma from last line
-    _exts=$(printf '%s' "$_exts" | sed '$ s/,$//')
+    # Write last entry without trailing comma
+    if [ -n "$_last_ext" ]; then
+        printf "  \\\\ '%s'\n" "$_last_ext" >> "$_exts_file"
+    fi
+    printf '  \\ ]\n' >> "$_exts_file"
 
-    # Replace the static g:coc_global_extensions block with the dynamic one
-    # Use awk to replace the block between the marker lines
-    awk -v exts="$_exts" '
-        /^let g:coc_global_extensions = \[/  { print; in_block=1; printf "%s\n", exts; next }
-        in_block && /^  \\ \]/ { print; in_block=0; next }
-        in_block { next }
-        { print }
-    ' "$_tmp" > "$VIMRC"
+    # Replace the static block in the downloaded vimrc using line-by-line processing
+    _in_block=0
+    while IFS= read -r _line; do
+        case "$_line" in
+            'let g:coc_global_extensions = ['*)
+                cat "$_exts_file"
+                _in_block=1
+                ;;
+            '  \ ]')
+                if [ "$_in_block" -eq 1 ]; then
+                    _in_block=0
+                else
+                    printf '%s\n' "$_line"
+                fi
+                ;;
+            *)
+                if [ "$_in_block" -eq 0 ]; then
+                    printf '%s\n' "$_line"
+                fi
+                ;;
+        esac
+    done < "$_tmp" > "$_out"
 
-    rm -f "$_tmp"
+    mv "$_out" "$VIMRC"
+    rm -f "$_tmp" "$_exts_file"
     print_success "vimrc written (CoC stack, langs: $LANGS)."
 }
 
