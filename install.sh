@@ -439,21 +439,25 @@ run_plugin_install() {
 # SHELL DETECTION (T-16)
 # ==========================================
 detect_shell() {
-    # Try to detect from running shell first
+    # $SHELL is the most reliable indicator of the user's actual shell,
+    # even when the script runs inside a sh subshell (curl | sh).
+    # Check it first before inspecting version variables which may be
+    # inherited from a different shell (e.g. $BASH_VERSION set on macOS sh).
+    case "$SHELL" in
+        */zsh)  printf 'zsh';  return ;;
+        */bash) printf 'bash'; return ;;
+        */fish) printf 'fish'; return ;;
+    esac
+
+    # Fallback: version variables (useful when $SHELL is unset or /bin/sh)
     if [ -n "$ZSH_VERSION" ]; then
         printf 'zsh'
-    elif [ -n "$BASH_VERSION" ]; then
-        printf 'bash'
     elif [ -n "$FISH_VERSION" ]; then
         printf 'fish'
+    elif [ -n "$BASH_VERSION" ]; then
+        printf 'bash'
     else
-        # Fallback: inspect $SHELL variable
-        case "$SHELL" in
-            */zsh)  printf 'zsh' ;;
-            */bash) printf 'bash' ;;
-            */fish) printf 'fish' ;;
-            *)      printf 'other' ;;
-        esac
+        printf 'other'
     fi
 }
 
