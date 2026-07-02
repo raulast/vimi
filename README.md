@@ -69,6 +69,32 @@ vimi .
 
 ---
 
+## Zellij Terminal Multiplexer (optional)
+
+Install [Zellij](https://zellij.dev) alongside vimi — isolated in `~/.rast/.zellij/`, no sudo required. Re-run anytime to update to the latest version.
+
+### Linux / macOS
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/zellij/install.sh | sh
+```
+
+### fish
+
+```fish
+bash (curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/zellij/install.sh | psub)
+```
+
+### Windows (PowerShell)
+
+```powershell
+irm https://raw.githubusercontent.com/raulast/vimi/master/zellij/install.ps1 | iex
+```
+
+After installation, reload your shell and run `zellij` to start.
+
+---
+
 ## What Gets Installed
 
 All files are placed exclusively under `~/.rast/.vim/`. Nothing is written outside your home directory.
