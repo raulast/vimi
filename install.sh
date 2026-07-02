@@ -4,17 +4,23 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/install.sh | sh -s -- --langs go,python,ts
 #
 # Options:
-#   --langs <list>   Comma-separated CoC extension keys to install.
+#   --langs <list>   Comma-separated CoC extension keys (CoC stack only — Vim 9+).
 #                    Valid keys: php go ts python sh lua html css cpp
 #                    Default: all extensions
+#                    Ignored when Vim < 9.0.0438 (LSP stack selected automatically)
+#
+# Stack selection (automatic — no action required):
+#   Vim >= 9.0.0438  →  CoC stack  (coc.nvim — full IntelliSense + Node.js)
+#   Vim <  9.0.0438  →  LSP stack  (vim-lsp + asyncomplete + ale)
 #
 # This script:
+#   - Detects Vim version and selects the appropriate plugin stack
+#   - Downloads the matching vimrc from GitHub
 #   - Installs vim-plug to ~/.rast/.vim/autoload/
-#   - Writes vimrc to ~/.rast/.vim/vimrc
 #   - Adds `vimi` alias to your shell profile
 #   - Does NOT install Node.js, Go, Python, or clangd
 #   - Does NOT require sudo
-#   - Is safe to run multiple times (idempotent)
+#   - Is safe to run multiple times (idempotent — re-run after upgrading Vim)
 
 set -e
 
@@ -23,10 +29,12 @@ set -e
 # ==========================================
 VIMI_DIR="$HOME/.rast/.vim"
 VIMRC="$VIMI_DIR/vimrc"
+RAW_BASE="https://raw.githubusercontent.com/raulast/vimi/master"
 PLUG_URL="https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
 PLUG_DEST="$VIMI_DIR/autoload/plug.vim"
 ALIAS_CMD='alias vimi="vim -u ~/.rast/.vim/vimrc"'
 FISH_ALIAS_CMD="alias vimi 'vim -u ~/.rast/.vim/vimrc'"
+STACK=""
 
 # ==========================================
 # COLOR HELPERS
@@ -68,9 +76,8 @@ print_error() {
 }
 
 # ==========================================
-# ARGUMENT PARSING (T-08)
+# ARGUMENT PARSING
 # ==========================================
-# Default: all 9 CoC extensions
 DEFAULT_LANGS="php go ts python sh lua html css cpp"
 LANGS=""
 
@@ -82,7 +89,6 @@ parse_args() {
                     print_error "--langs requires a value (e.g. --langs go,python,ts)"
                     exit 1
                 fi
-                # Normalize: replace commas with spaces
                 LANGS=$(printf '%s' "$2" | tr ',' ' ')
                 shift 2
                 ;;
@@ -110,11 +116,10 @@ parse_args() {
 }
 
 # ==========================================
-# LANG → CoC EXTENSION MAP (T-09)
+# LANG → CoC EXTENSION MAP
 # ==========================================
 lang_to_coc() {
-    _lang="$1"
-    case "$_lang" in
+    case "$1" in
         php)    printf 'coc-phpls' ;;
         go)     printf 'coc-go' ;;
         ts)     printf 'coc-tsserver' ;;
@@ -125,37 +130,14 @@ lang_to_coc() {
         css)    printf 'coc-css' ;;
         cpp)    printf 'coc-clangd' ;;
         *)
-            print_warn "Unknown lang key: '$_lang' — skipped"
+            print_warn "Unknown lang key: '$1' — skipped"
             printf ''
             ;;
     esac
 }
 
-build_coc_extensions_vimscript() {
-    _first=1
-    _result="let g:coc_global_extensions = ["
-    for _lang in $LANGS; do
-        _ext=$(lang_to_coc "$_lang")
-        if [ -n "$_ext" ]; then
-            if [ "$_first" -eq 1 ]; then
-                _result="${_result}
-  \\ '$_ext',"
-                _first=0
-            else
-                _result="${_result}
-  \\ '$_ext',"
-            fi
-        fi
-    done
-    # Remove trailing comma from last entry
-    _result=$(printf '%s' "$_result" | sed '$ s/,$//')
-    _result="${_result}
-  \\ ]"
-    printf '%s' "$_result"
-}
-
 # ==========================================
-# OS DETECTION (T-10)
+# OS DETECTION
 # ==========================================
 detect_os() {
     _uname=$(uname -s)
@@ -164,8 +146,7 @@ detect_os() {
         Darwin*) OS="macos" ;;
         *)
             print_error "Unsupported OS: $_uname"
-            print_error "This installer supports Linux and macOS only."
-            print_error "For Windows, use: irm https://raw.githubusercontent.com/raulast/vimi/master/install.ps1 | iex"
+            print_error "For Windows use: irm https://raw.githubusercontent.com/raulast/vimi/master/install.ps1 | iex"
             exit 1
             ;;
     esac
@@ -173,7 +154,35 @@ detect_os() {
 }
 
 # ==========================================
-# VIM CHECK + INSTALL GATE (T-11)
+# VIM VERSION DETECTION
+# ==========================================
+
+# Outputs "major minor patch" as space-separated integers
+# Handles: "8.2", "9.0", "9.0.0438", "9.1.123"
+get_vim_version() {
+    _raw=$(vim --version 2>/dev/null | head -1)
+    _ver=$(printf '%s' "$_raw" | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1)
+    _major=$(printf '%s' "$_ver" | cut -d. -f1)
+    _minor=$(printf '%s' "$_ver" | cut -d. -f2)
+    _patch=$(printf '%s' "$_ver" | cut -d. -f3)
+    case "$_patch" in
+        ''|*[!0-9]*) _patch=0 ;;
+    esac
+    printf '%s %s %s' "${_major:-0}" "${_minor:-0}" "$_patch"
+}
+
+# Returns 0 (true) if vim >= 9.0.0438
+vim_is_v9() {
+    set -- $(get_vim_version)
+    _maj=$1; _min=$2; _pat=$3
+    if [ "$_maj" -gt 9 ]; then return 0; fi
+    if [ "$_maj" -eq 9 ] && [ "$_min" -gt 0 ]; then return 0; fi
+    if [ "$_maj" -eq 9 ] && [ "$_min" -eq 0 ] && [ "$_pat" -ge 438 ]; then return 0; fi
+    return 1
+}
+
+# ==========================================
+# VIM CHECK + INSTALL GATE
 # ==========================================
 check_vim() {
     if command -v vim >/dev/null 2>&1; then
@@ -188,46 +197,55 @@ check_vim() {
 
     case "$_answer" in
         [yY]|[yY][eE][sS])
-            install_vim
+            print_warn "Vim must be installed at the system level (requires sudo or admin access)."
+            print_warn "vimi does not run sudo. Please install Vim manually with one of:"
+            printf '\n'
+            if command -v apt-get >/dev/null 2>&1; then
+                print_info "  sudo apt-get install -y vim"
+            elif command -v yum >/dev/null 2>&1; then
+                print_info "  sudo yum install -y vim"
+            elif command -v dnf >/dev/null 2>&1; then
+                print_info "  sudo dnf install -y vim"
+            elif command -v brew >/dev/null 2>&1; then
+                print_info "  brew install vim"
+            else
+                print_info "  sudo apt-get install -y vim    # Debian/Ubuntu"
+                print_info "  sudo yum install -y vim        # RHEL/CentOS"
+                print_info "  brew install vim               # macOS"
+            fi
+            printf '\n'
+            print_info "After installing Vim, re-run this installer:"
+            print_info "  curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/install.sh | sh"
+            exit 1
             ;;
         *)
             print_error "Vim installation declined. vimi requires Vim to work."
-            print_error "Install Vim manually and re-run this script."
-            print_info "  Linux (apt):  sudo apt-get install -y vim"
-            print_info "  Linux (yum):  sudo yum install -y vim"
-            print_info "  macOS:        brew install vim"
             exit 1
             ;;
     esac
 }
 
-install_vim() {
-    # vimi never runs sudo. Installing Vim requires system-level access.
-    # We provide the exact command and let the user run it.
-    print_warn "Vim must be installed at the system level (requires sudo or admin access)."
-    print_warn "vimi does not run sudo. Please install Vim manually with one of:"
-    printf '\n'
-    if command -v apt-get >/dev/null 2>&1; then
-        print_info "  sudo apt-get install -y vim"
-    elif command -v yum >/dev/null 2>&1; then
-        print_info "  sudo yum install -y vim"
-    elif command -v dnf >/dev/null 2>&1; then
-        print_info "  sudo dnf install -y vim"
-    elif command -v brew >/dev/null 2>&1; then
-        print_info "  brew install vim"
+# ==========================================
+# STACK DETECTION
+# ==========================================
+detect_stack() {
+    _ver_str=$(get_vim_version | tr ' ' '.')
+    if vim_is_v9; then
+        STACK="coc"
+        print_success "Vim $_ver_str — CoC stack selected (full IntelliSense)"
     else
-        print_info "  sudo apt-get install -y vim    # Debian/Ubuntu"
-        print_info "  sudo yum install -y vim        # RHEL/CentOS"
-        print_info "  brew install vim               # macOS"
+        STACK="lsp"
+        print_info "Vim $_ver_str — LSP stack selected (vim-lsp + asyncomplete + ale)"
+        print_info "CoC stack requires Vim 9.0.0438+. Re-run this installer after upgrading Vim."
     fi
-    printf '\n'
-    print_info "After installing Vim, re-run this installer:"
-    print_info "  curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/install.sh | sh"
-    exit 1
+
+    if [ "$STACK" = "lsp" ] && [ "$LANGS" != "$DEFAULT_LANGS" ]; then
+        print_info "--langs flag ignored on LSP stack. Language servers are auto-detected by filetype via vim-lsp-settings."
+    fi
 }
 
 # ==========================================
-# DIRECTORY STRUCTURE (T-12)
+# DIRECTORY STRUCTURE
 # ==========================================
 create_dirs() {
     print_info "Creating directory structure under $VIMI_DIR ..."
@@ -242,7 +260,7 @@ create_dirs() {
 }
 
 # ==========================================
-# VIM-PLUG INSTALLATION (T-13)
+# VIM-PLUG INSTALLATION
 # ==========================================
 install_vimplug() {
     if [ -f "$PLUG_DEST" ]; then
@@ -261,188 +279,68 @@ install_vimplug() {
 }
 
 # ==========================================
-# VIMRC GENERATION (T-14)
+# VIMRC DOWNLOAD + PATCH (CoC extensions)
 # ==========================================
 write_vimrc() {
-    print_info "Writing vimrc to $VIMRC ..."
+    print_info "Downloading vimrc ($STACK stack)..."
 
-    _coc_extensions=$(build_coc_extensions_vimscript)
+    if [ "$STACK" = "lsp" ]; then
+        # LSP stack: download as-is — vim-lsp-settings handles language servers
+        curl -fsSL "$RAW_BASE/vimrc.lsp" -o "$VIMRC"
+        print_success "vimrc written (LSP stack)."
+        return 0
+    fi
 
-    cat > "$VIMRC" << VIMRC_EOF
-" ==========================================
-" vimi — Isolated Vim IDE configuration
-" Path: ~/.rast/.vim/vimrc
-" Alias: vimi = vim -u ~/.rast/.vim/vimrc
-" Generated by vimi installer — safe to edit
-" ==========================================
+    # CoC stack: download base then patch g:coc_global_extensions with selected langs
+    _tmp=$(mktemp)
+    curl -fsSL "$RAW_BASE/vimrc.coc" -o "$_tmp"
 
-" ==========================================
-" 1. RUNTIME PATHS — keep everything isolated
-" ==========================================
-set runtimepath^=~/.rast/.vim
-set runtimepath+=~/.rast/.vim/after
+    # Build the extensions list from selected LANGS
+    _exts=""
+    for _lang in $LANGS; do
+        _ext=$(lang_to_coc "$_lang")
+        if [ -n "$_ext" ]; then
+            _exts="${_exts}  \\ '$_ext',\n"
+        fi
+    done
+    # Remove trailing comma from last line
+    _exts=$(printf '%s' "$_exts" | sed '$ s/,$//')
 
-" ==========================================
-" 2. TEMP FILES — never pollute cwd
-" ==========================================
-set backupdir=~/.rast/.vim/backup//
-set directory=~/.rast/.vim/swap//
-set undodir=~/.rast/.vim/undo//
-set undofile
+    # Replace the static g:coc_global_extensions block with the dynamic one
+    # Use awk to replace the block between the marker lines
+    awk -v exts="$_exts" '
+        /^let g:coc_global_extensions = \[/  { print; in_block=1; printf "%s\n", exts; next }
+        in_block && /^  \\ \]/ { print; in_block=0; next }
+        in_block { next }
+        { print }
+    ' "$_tmp" > "$VIMRC"
 
-" ==========================================
-" 3. GENERAL SETTINGS & UI
-" ==========================================
-set nocompatible
-syntax on
-set number
-set relativenumber
-set mouse=a
-set clipboard=unnamedplus
-set cursorline
-set signcolumn=yes
-set encoding=utf-8
-set fileencoding=utf-8
-set hidden
-set updatetime=300
-set shortmess+=c
-set scrolloff=8
-set colorcolumn=80
-
-" ==========================================
-" 4. TABS & SEARCH
-" ==========================================
-set tabstop=4
-set shiftwidth=4
-set expandtab
-set smartindent
-set hlsearch
-set incsearch
-set ignorecase
-set smartcase
-
-" ==========================================
-" 5. KEY MAPPINGS (leader: space)
-" ==========================================
-let mapleader = " "
-
-" Window navigation
-nnoremap <C-h> <C-w>h
-nnoremap <C-j> <C-w>j
-nnoremap <C-k> <C-w>k
-nnoremap <C-l> <C-w>l
-
-" Clear search highlight
-nnoremap <leader>h :nohlsearch<CR>
-
-" Buffer navigation
-nnoremap <leader>bn :bnext<CR>
-nnoremap <leader>bp :bprevious<CR>
-nnoremap <leader>bd :bdelete<CR>
-
-" Save / quit shortcuts
-nnoremap <leader>w :w<CR>
-nnoremap <leader>q :q<CR>
-
-" ==========================================
-" 6. CoC — IntelliSense (requires Node.js)
-" ==========================================
-" CoC data stored inside isolated path
-let g:coc_data_home = '~/.rast/.vim/coc'
-
-" Extensions auto-installed on first launch when Node.js is available
-${_coc_extensions}
-
-" ==========================================
-" 7. PLUGINS (vim-plug)
-" ==========================================
-call plug#begin('~/.rast/.vim/plugged')
-
-" File explorer
-Plug 'preservim/nerdtree'
-
-" Status bar
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-
-" Fuzzy finder
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
-
-" IntelliSense engine (requires Node.js)
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-
-call plug#end()
-
-" ==========================================
-" 8. PLUGIN SETTINGS
-" ==========================================
-
-" --- NERDTree ---
-let g:NERDTreeShowHidden = 1
-let g:NERDTreeMinimalUI = 1
-let g:NERDTreeIgnore = ['\.git\$', 'node_modules', '__pycache__']
-let g:NERDTreeQuitOnOpen = 1
-
-" --- vim-airline ---
-let g:airline_powerline_fonts = 0
-let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#tabline#formatter = 'unique_tail'
-
-" --- Netrw (remote SSH editing) ---
-" Usage: vim scp://user@host//path/to/file
-let g:netrw_banner = 0
-let g:netrw_liststyle = 3
-let g:netrw_browse_split = 4
-
-" --- CoC keymaps ---
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gr <Plug>(coc-references)
-nnoremap <silent> K :call CocActionAsync('doHover')<CR>
-nmap <leader>rn <Plug>(coc-rename)
-nmap <leader>ca <Plug>(coc-codeaction-cursor)
-nmap <silent> [g <Plug>(coc-diagnostic-prev)
-nmap <silent> ]g <Plug>(coc-diagnostic-next)
-nnoremap <silent> <leader>d :<C-u>CocList diagnostics<CR>
-
-" ==========================================
-" 9. PLUGIN KEYMAPS
-" ==========================================
-" NERDTree toggle (Space + n)
-nnoremap <leader>n :NERDTreeToggle<CR>
-" NERDTree find current file (Space + N)
-nnoremap <leader>N :NERDTreeFind<CR>
-
-" FZF — fuzzy file search (Space + p)
-nnoremap <leader>p :Files<CR>
-" FZF — search in file content (Space + /)
-nnoremap <leader>/ :Rg<CR>
-" FZF — open buffers (Space + b)
-nnoremap <leader>bb :Buffers<CR>
-VIMRC_EOF
-
-    print_success "vimrc written."
+    rm -f "$_tmp"
+    print_success "vimrc written (CoC stack, langs: $LANGS)."
 }
 
 # ==========================================
-# PLUGIN INSTALLATION (T-15)
+# PLUGIN INSTALLATION
 # ==========================================
 run_plugin_install() {
     print_info "Installing Vim plugins (this may take a minute)..."
     vim -u "$VIMRC" +PlugInstall +qall 2>/dev/null || true
-    print_success "Plugins installed."
-    print_info "Note: CoC extensions will auto-install on first 'vimi' launch when Node.js is available."
+
+    if [ "$STACK" = "coc" ]; then
+        print_success "Plugins installed."
+        print_info "CoC extensions will auto-install on first 'vimi' launch when Node.js is available."
+    else
+        print_success "Plugins installed."
+        print_info "Language servers (gopls, pyright, clangd…) will auto-install on first file open via vim-lsp-settings."
+    fi
 }
 
 # ==========================================
-# SHELL DETECTION (T-16)
+# SHELL DETECTION
 # ==========================================
 detect_shell() {
     # $SHELL is the most reliable indicator of the user's actual shell,
     # even when the script runs inside a sh subshell (curl | sh).
-    # Check it first before inspecting version variables which may be
-    # inherited from a different shell (e.g. $BASH_VERSION set on macOS sh).
     case "$SHELL" in
         */zsh)  printf 'zsh';  return ;;
         */bash) printf 'bash'; return ;;
@@ -471,7 +369,7 @@ profile_for_shell() {
 }
 
 # ==========================================
-# ALIAS INSTALLATION (T-17)
+# ALIAS INSTALLATION
 # ==========================================
 add_alias() {
     _shell=$(detect_shell)
@@ -480,23 +378,19 @@ add_alias() {
     print_info "Detected shell: $_shell"
     print_info "Shell profile: $_profile"
 
-    # Create fish config dir if needed
     if [ "$_shell" = "fish" ]; then
         mkdir -p "$HOME/.config/fish"
     fi
 
-    # Create profile file if it doesn't exist
     if [ ! -f "$_profile" ]; then
         touch "$_profile"
     fi
 
-    # Check for existing alias (avoid duplicates)
     if grep -q 'alias vimi' "$_profile" 2>/dev/null; then
         print_success "Alias 'vimi' already present in $_profile — skipping."
         return 0
     fi
 
-    # Write alias with fish-specific syntax
     if [ "$_shell" = "fish" ]; then
         printf '\n# vimi — isolated Vim IDE\n%s\n' "$FISH_ALIAS_CMD" >> "$_profile"
     else
@@ -507,52 +401,65 @@ add_alias() {
 }
 
 # ==========================================
-# LSP DEPENDENCY CHECK (T-18)
+# LSP DEPENDENCY CHECK
 # ==========================================
 check_lsp_deps() {
     print_info "Checking LSP dependencies..."
     _all_found=1
 
     if ! command -v node >/dev/null 2>&1; then
-        print_warn "Node.js not found — CoC extensions for JS/TS/PHP/HTML/CSS/Bash/Lua will not activate until Node.js is installed."
-        print_warn "  Once installed, CoC will activate automatically on next 'vimi' launch."
+        if [ "$STACK" = "coc" ]; then
+            print_warn "Node.js not found — CoC extensions will not activate until Node.js is installed."
+            print_warn "  Once installed, CoC activates automatically on next 'vimi' launch."
+        else
+            print_warn "Node.js not found — some vim-lsp-settings language servers require Node.js."
+        fi
         _all_found=0
     else
-        _node_version=$(node --version)
-        print_success "Node.js found: $_node_version"
+        print_success "Node.js found: $(node --version)"
     fi
 
     if ! command -v python3 >/dev/null 2>&1; then
-        print_warn "Python 3 not found — coc-pyright (Python IntelliSense) will not work."
+        if [ "$STACK" = "coc" ]; then
+            print_warn "Python 3 not found — coc-pyright (Python IntelliSense) will not work."
+        else
+            print_warn "Python 3 not found — vim-lsp Python support will not work."
+        fi
         _all_found=0
     else
-        _py_version=$(python3 --version)
-        print_success "Python 3 found: $_py_version"
+        print_success "Python 3 found: $(python3 --version)"
     fi
 
     if ! command -v go >/dev/null 2>&1; then
-        print_warn "Go not found — coc-go (Go IntelliSense) will not work."
+        if [ "$STACK" = "coc" ]; then
+            print_warn "Go not found — coc-go (Go IntelliSense) will not work."
+        else
+            print_warn "Go not found — vim-lsp Go support (gopls) will not work."
+        fi
         _all_found=0
     else
-        _go_version=$(go version)
-        print_success "Go found: $_go_version"
+        print_success "Go found: $(go version)"
     fi
 
     if ! command -v clangd >/dev/null 2>&1; then
-        print_warn "clangd not found — coc-clangd (C/C++ IntelliSense) will not work."
-        print_warn "  Install with: sudo apt install clangd  (or equivalent for your distro)"
+        if [ "$STACK" = "coc" ]; then
+            print_warn "clangd not found — coc-clangd (C/C++ IntelliSense) will not work."
+        else
+            print_warn "clangd not found — vim-lsp C/C++ support will not work."
+        fi
+        print_warn "  Install: sudo apt install clangd  (or equivalent)"
         _all_found=0
     else
         print_success "clangd found."
     fi
 
     if [ "$_all_found" -eq 1 ]; then
-        print_success "All LSP dependencies found — CoC will be fully functional."
+        print_success "All LSP dependencies found."
     fi
 }
 
 # ==========================================
-# SUCCESS MESSAGE (T-19)
+# SUCCESS MESSAGE
 # ==========================================
 print_final_success() {
     printf '\n'
@@ -566,24 +473,30 @@ print_final_success() {
         printf "============================================\n"
     fi
     printf '\n'
-    print_info "To start using vimi, reload your shell:"
+
+    if [ "$STACK" = "coc" ]; then
+        print_info "Stack: CoC (Vim 9+ — full IntelliSense via coc.nvim)"
+    else
+        print_info "Stack: LSP (Vim 8 — vim-lsp + asyncomplete + ale)"
+        print_info "Upgrade to CoC stack anytime: upgrade Vim to 9.0.0438+ then re-run:"
+        printf '    curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/install.sh | sh\n'
+        printf '\n'
+    fi
+
+    print_info "Reload your shell to activate the alias:"
     printf '\n'
     printf '    source %s\n' "$(profile_for_shell "$(detect_shell)")"
     printf '\n'
-    print_info "Then launch your isolated Vim IDE with:"
+    print_info "Then launch your isolated Vim IDE:"
     printf '\n'
     printf '    vimi\n'
-    printf '\n'
-    print_info "Installed files:"
-    printf '    %s/vimrc\n' "$VIMI_DIR"
-    printf '    %s/autoload/plug.vim\n' "$VIMI_DIR"
     printf '\n'
     print_info "System vim is unchanged. Run 'vim' for the original editor."
     printf '\n'
 }
 
 # ==========================================
-# MAIN (T-20)
+# MAIN
 # ==========================================
 main() {
     printf '\n'
@@ -593,6 +506,7 @@ main() {
     parse_args "$@"
     detect_os
     check_vim
+    detect_stack
     create_dirs
     install_vimplug
     write_vimrc

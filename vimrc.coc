@@ -1,8 +1,8 @@
 " ==========================================
-" vimi — Isolated Vim IDE (CoC stack reference — Vim 9.0.0438+)
-" This file is the CoC stack reference. The installer writes
-" the correct stack (vimrc.coc or vimrc.lsp) to ~/.rast/.vim/vimrc
-" based on your Vim version. Re-run the installer to update.
+" vimi — Isolated Vim IDE (CoC stack — Vim 9.0.0438+)
+" Path: ~/.rast/.vim/vimrc
+" Alias: vimi = vim -u ~/.rast/.vim/vimrc
+" Re-run installer to update or switch stacks
 " ==========================================
 
 " ==========================================
@@ -79,7 +79,8 @@ nnoremap <leader>q :q<CR>
 " CoC data stored inside isolated path
 let g:coc_data_home = '~/.rast/.vim/coc'
 
-" Extensions auto-installed on first launch with Node.js available
+" Extensions auto-installed on first launch when Node.js is available
+" To install a subset, re-run: curl ... | sh -s -- --langs go,python,ts
 let g:coc_global_extensions = [
   \ 'coc-phpls',
   \ 'coc-go',
@@ -108,7 +109,7 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
-" IntelliSense engine (requires Node.js — works without it, activates automatically when Node is added)
+" IntelliSense engine (requires Node.js — activates automatically when Node is added)
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 call plug#end()
@@ -121,7 +122,6 @@ call plug#end()
 let g:NERDTreeShowHidden = 1
 let g:NERDTreeMinimalUI = 1
 let g:NERDTreeIgnore = ['\.git$', 'node_modules', '__pycache__']
-" Close NERDTree when opening a file
 let g:NERDTreeQuitOnOpen = 1
 
 " --- vim-airline ---
@@ -136,39 +136,21 @@ let g:netrw_liststyle = 3
 let g:netrw_browse_split = 4
 
 " --- CoC keymaps ---
-" Go to definition
 nmap <silent> gd <Plug>(coc-definition)
-" Go to type definition
 nmap <silent> gy <Plug>(coc-type-definition)
-" Go to references
 nmap <silent> gr <Plug>(coc-references)
-" Show documentation in preview window
 nnoremap <silent> K :call CocActionAsync('doHover')<CR>
-" Rename symbol
 nmap <leader>rn <Plug>(coc-rename)
-" Code action on cursor
 nmap <leader>ca <Plug>(coc-codeaction-cursor)
-" Format selected
-xmap <leader>f <Plug>(coc-format-selected)
-nmap <leader>f <Plug>(coc-format-selected)
-" Navigate diagnostics
 nmap <silent> [g <Plug>(coc-diagnostic-prev)
 nmap <silent> ]g <Plug>(coc-diagnostic-next)
-" Show diagnostics list
 nnoremap <silent> <leader>d :<C-u>CocList diagnostics<CR>
 
 " ==========================================
 " 9. PLUGIN KEYMAPS
 " ==========================================
-
-" NERDTree toggle (Space + n)
 nnoremap <leader>n :NERDTreeToggle<CR>
-" NERDTree find current file (Space + N)
 nnoremap <leader>N :NERDTreeFind<CR>
-
-" FZF — fuzzy file search (Space + p)
 nnoremap <leader>p :Files<CR>
-" FZF — search in file content (Space + /)
 nnoremap <leader>/ :Rg<CR>
-" FZF — open buffers (Space + b)
 nnoremap <leader>bb :Buffers<CR>

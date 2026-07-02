@@ -12,6 +12,21 @@ After installation, type `vimi` to open your personal IDE. Type `vim` to open th
 
 ---
 
+## Vim Version Compatibility
+
+vimi automatically detects your Vim version and installs the appropriate plugin stack — no flags or configuration required.
+
+| Vim version | Stack | IntelliSense engine | Notes |
+|---|---|---|---|
+| >= 9.0.0438 | **CoC** | coc.nvim | Full IntelliSense, requires Node.js |
+| < 9.0.0438 | **LSP** | vim-lsp + asyncomplete + ale | Vim 8 compatible, language servers auto-installed per filetype |
+
+Both stacks share identical keymaps — same muscle memory regardless of which stack is active.
+
+Re-run the installer at any time to update your vimrc or switch stacks after a Vim upgrade.
+
+---
+
 ## Quick Start
 
 ### Linux / macOS
@@ -163,6 +178,24 @@ If any of these are missing, the installer **warns** you but completes successfu
 
 ---
 
+## Upgrading from Vim 8 to Vim 9
+
+If you installed vimi with Vim 8 (LSP stack) and later upgraded to Vim 9, re-run the installer — it detects the new version automatically and switches to the CoC stack:
+
+```sh
+# Linux / macOS
+curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/install.sh | sh
+```
+
+```powershell
+# Windows PowerShell
+irm https://raw.githubusercontent.com/raulast/vimi/master/install.ps1 | iex
+```
+
+The installer is idempotent — re-running it is the upgrade mechanism. Your alias and directory structure are preserved.
+
+---
+
 ## Adding Node.js Later
 
 **You do not need to re-run the installer if you add Node.js after the initial setup.**
@@ -284,6 +317,30 @@ Verify inside vimi:
 ```vim
 :CocInfo
 :CocList extensions
+```
+
+---
+
+### `coc.nvim requires at least Vim 9.0.0438` warning
+
+**Symptom:** coc.nvim shows a startup warning and IntelliSense does not work.
+
+**Cause:** Your Vim version is older than 9.0.0438. The installer installed the LSP stack — but if you had a previous coc.nvim install, it may conflict.
+
+**Fix option 1** — Clean reinstall with the correct stack:
+```sh
+rm -rf ~/.rast/.vim
+curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/install.sh | sh
+```
+
+**Fix option 2** — Upgrade Vim to 9.0.0438+ and re-run the installer:
+```sh
+# Ubuntu/Debian (via PPA)
+sudo add-apt-repository ppa:jonathonf/vim
+sudo apt update && sudo apt install vim
+
+# Then re-run vimi installer
+curl -fsSL https://raw.githubusercontent.com/raulast/vimi/master/install.sh | sh
 ```
 
 ---

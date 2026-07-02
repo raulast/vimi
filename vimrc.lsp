@@ -1,8 +1,8 @@
 " ==========================================
-" vimi — Isolated Vim IDE (CoC stack reference — Vim 9.0.0438+)
-" This file is the CoC stack reference. The installer writes
-" the correct stack (vimrc.coc or vimrc.lsp) to ~/.rast/.vim/vimrc
-" based on your Vim version. Re-run the installer to update.
+" vimi — Isolated Vim IDE (LSP stack — Vim 8 compatible)
+" Path: ~/.rast/.vim/vimrc
+" Alias: vimi = vim -u ~/.rast/.vim/vimrc
+" Re-run installer after upgrading Vim to 9.0.0438+ to switch to CoC stack
 " ==========================================
 
 " ==========================================
@@ -74,26 +74,7 @@ nnoremap <leader>w :w<CR>
 nnoremap <leader>q :q<CR>
 
 " ==========================================
-" 6. CoC — IntelliSense (requires Node.js)
-" ==========================================
-" CoC data stored inside isolated path
-let g:coc_data_home = '~/.rast/.vim/coc'
-
-" Extensions auto-installed on first launch with Node.js available
-let g:coc_global_extensions = [
-  \ 'coc-phpls',
-  \ 'coc-go',
-  \ 'coc-tsserver',
-  \ 'coc-pyright',
-  \ 'coc-sh',
-  \ 'coc-lua',
-  \ 'coc-html',
-  \ 'coc-css',
-  \ 'coc-clangd'
-  \ ]
-
-" ==========================================
-" 7. PLUGINS (vim-plug)
+" 6. PLUGINS (vim-plug) — LSP stack (Vim 8 compatible)
 " ==========================================
 call plug#begin('~/.rast/.vim/plugged')
 
@@ -108,20 +89,26 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 
-" IntelliSense engine (requires Node.js — works without it, activates automatically when Node is added)
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" LSP client (Vim 8 compatible)
+Plug 'prabirshaker/vim-lsp'
+" Auto-installs language servers on first file open (gopls, pyright, clangd, etc.)
+Plug 'mattn/vim-lsp-settings'
+Plug 'prabirshaker/asyncomplete.vim'
+Plug 'prabirshaker/asyncomplete-lsp.vim'
+
+" Linting + diagnostics (replaces CoC diagnostics on Vim 8)
+Plug 'dense-analysis/ale'
 
 call plug#end()
 
 " ==========================================
-" 8. PLUGIN SETTINGS
+" 7. PLUGIN SETTINGS — LSP stack
 " ==========================================
 
 " --- NERDTree ---
 let g:NERDTreeShowHidden = 1
 let g:NERDTreeMinimalUI = 1
 let g:NERDTreeIgnore = ['\.git$', 'node_modules', '__pycache__']
-" Close NERDTree when opening a file
 let g:NERDTreeQuitOnOpen = 1
 
 " --- vim-airline ---
@@ -135,40 +122,56 @@ let g:netrw_banner = 0
 let g:netrw_liststyle = 3
 let g:netrw_browse_split = 4
 
-" --- CoC keymaps ---
+" --- vim-lsp ---
+" ale handles diagnostics — disable vim-lsp built-in to avoid duplication
+let g:lsp_diagnostics_enabled = 0
+let g:lsp_document_highlight_enabled = 1
+let g:lsp_signature_auto_enabled = 1
+
+" --- asyncomplete ---
+set completeopt+=menuone,noinsert,noselect
+let g:asyncomplete_auto_popup = 1
+let g:asyncomplete_auto_completeopt = 0
+
+" Tab cycles through completion suggestions (same feel as CoC)
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr> <CR>    pumvisible() ? asyncomplete#close_popup() : "\<CR>"
+
+" --- ale ---
+let g:ale_sign_error = '✗'
+let g:ale_sign_warning = '⚠'
+let g:ale_lint_on_text_changed = 'never'
+let g:ale_lint_on_insert_leave = 1
+let g:ale_set_highlights = 0
+
+" ==========================================
+" 8. KEYMAPS — LSP stack (mirrors CoC stack keymaps)
+" ==========================================
+
 " Go to definition
-nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gd :LspDefinition<CR>
 " Go to type definition
-nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gy :LspTypeDefinition<CR>
 " Go to references
-nmap <silent> gr <Plug>(coc-references)
-" Show documentation in preview window
-nnoremap <silent> K :call CocActionAsync('doHover')<CR>
+nmap <silent> gr :LspReferences<CR>
+" Hover documentation
+nnoremap <silent> K :LspHover<CR>
 " Rename symbol
-nmap <leader>rn <Plug>(coc-rename)
-" Code action on cursor
-nmap <leader>ca <Plug>(coc-codeaction-cursor)
-" Format selected
-xmap <leader>f <Plug>(coc-format-selected)
-nmap <leader>f <Plug>(coc-format-selected)
-" Navigate diagnostics
-nmap <silent> [g <Plug>(coc-diagnostic-prev)
-nmap <silent> ]g <Plug>(coc-diagnostic-next)
-" Show diagnostics list
-nnoremap <silent> <leader>d :<C-u>CocList diagnostics<CR>
+nmap <leader>rn :LspRename<CR>
+" Code action
+nmap <leader>ca :LspCodeAction<CR>
+" Navigate diagnostics (ale)
+nmap <silent> [g <Plug>(ale_previous_wrap)
+nmap <silent> ]g <Plug>(ale_next_wrap)
+" Diagnostics detail
+nnoremap <silent> <leader>d :ALEDetail<CR>
 
 " ==========================================
-" 9. PLUGIN KEYMAPS
+" 9. PLUGIN KEYMAPS (identical to CoC stack)
 " ==========================================
-
-" NERDTree toggle (Space + n)
 nnoremap <leader>n :NERDTreeToggle<CR>
-" NERDTree find current file (Space + N)
 nnoremap <leader>N :NERDTreeFind<CR>
-
-" FZF — fuzzy file search (Space + p)
 nnoremap <leader>p :Files<CR>
-" FZF — search in file content (Space + /)
 nnoremap <leader>/ :Rg<CR>
-" FZF — open buffers (Space + b)
 nnoremap <leader>bb :Buffers<CR>
