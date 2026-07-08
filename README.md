@@ -29,6 +29,8 @@ Re-run the installer at any time to update your vimrc or switch stacks after a V
 
 ## Quick Start
 
+For a complete reference of Vim commands and all vimi keybindings, see [MANUAL.md](MANUAL.md).
+
 ### Linux / macOS
 
 ```sh
