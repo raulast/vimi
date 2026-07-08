@@ -120,7 +120,8 @@ All files are placed exclusively under `~/.rast/.vim/`. Nothing is written outsi
 | [NERDTree](https://github.com/preservim/nerdtree) | File tree explorer |
 | [vim-airline](https://github.com/vim-airline/vim-airline) | Status bar |
 | [fzf.vim](https://github.com/junegunn/fzf.vim) | Fuzzy file & content search |
-| [coc.nvim](https://github.com/neoclide/coc.nvim) | IntelliSense engine (requires Node.js) |
+| [coc.nvim](https://github.com/neoclide/coc.nvim) | IntelliSense engine — Vim 9.0.0438+ (requires Node.js) |
+| [vim-lsp](https://github.com/prabirshrestha/vim-lsp) + [asyncomplete](https://github.com/prabirshrestha/asyncomplete.vim) + [ale](https://github.com/dense-analysis/ale) | IntelliSense engine — Vim 8 (no Node.js required) |
 
 **Shell alias / function added:**
 
@@ -147,12 +148,14 @@ function vimi { vim -u "$HOME/.rast/.vim/vimrc" $args }
 | `Space+bb` | List open buffers |
 | `Space+h` | Clear search highlight |
 | `Space+w` / `Space+q` | Save / quit |
-| `gd` | Go to definition (CoC) |
-| `K` | Show documentation (CoC) |
-| `Space+rn` | Rename symbol (CoC) |
-| `Space+ca` | Code action (CoC) |
-| `[g` / `]g` | Navigate diagnostics (CoC) |
-| `Space+d` | Diagnostics list (CoC) |
+| `gd` | Go to definition |
+| `K` | Show documentation |
+| `Space+rn` | Rename symbol |
+| `Space+ca` | Code action |
+| `[g` / `]g` | Navigate diagnostics |
+| `Space+d` | Diagnostics list |
+
+All IntelliSense keybindings work on both stacks (CoC and LSP) — same keys, different backend. See [MANUAL.md](MANUAL.md) for the full reference.
 
 ---
 
