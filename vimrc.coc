@@ -27,7 +27,11 @@ syntax on
 set number
 set relativenumber
 set mouse=a
-set clipboard=unnamedplus
+if has('win32') || has('win64')
+    set clipboard=unnamed
+else
+    set clipboard=unnamedplus
+endif
 set cursorline
 set signcolumn=yes
 set encoding=utf-8

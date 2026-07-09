@@ -261,9 +261,7 @@ function Write-Vimrc {
 function Invoke-PluginInstall {
     Write-VimInfo "Installing Vim plugins (this may take a minute)..."
     try {
-        Start-Process -FilePath "vim" `
-            -ArgumentList "-u `"$VimrcPath`" +PlugInstall +qall" `
-            -Wait -PassThru -WindowStyle Hidden | Out-Null
+        & vim -u "$VimrcPath" +PlugInstall +qall
         Write-VimSuccess "Plugins installed."
         if ($script:Stack -eq "coc") {
             Write-VimInfo "CoC extensions will auto-install on first 'vimi' launch when Node.js is available."
