@@ -81,6 +81,26 @@ All keybindings at a glance. Leader key is `Space`.
 | `Space+N` | Reveal current file in tree (vimi) |
 | `Space+w` | Save file (vimi) |
 | `Space+q` | Quit (vimi) |
+| `Space+t` | Open integrated terminal (vimi) |
+
+### Splits
+
+| Key | Action |
+|-----|--------|
+| `Space+sv` | Vertical split (vimi) |
+| `Space+sh` | Horizontal split (vimi) |
+| `Space+sx` | Close current split (vimi) |
+| `Space+se` | Equalize all split sizes (vimi) |
+| `Space+.` | Alternate to last buffer (vimi) |
+
+### Quickfix
+
+| Key | Action |
+|-----|--------|
+| `Space+co` | Open quickfix list (vimi) |
+| `Space+cc` | Close quickfix list (vimi) |
+| `Space+cn` | Next quickfix item (vimi) |
+| `Space+cp` | Previous quickfix item (vimi) |
 
 ### IntelliSense
 
@@ -92,6 +112,7 @@ All keybindings at a glance. Leader key is `Space`.
 | `K` | Show documentation | Both stacks |
 | `Space+rn` | Rename symbol | Both stacks |
 | `Space+ca` | Code action | Both stacks |
+| `Space+f` | Format document | Both stacks |
 | `[g` | Previous diagnostic | Both stacks |
 | `]g` | Next diagnostic | Both stacks |
 | `Space+d` | Diagnostics list | Both stacks |
@@ -187,7 +208,22 @@ Open splits with Command mode, navigate with vimi keybindings:
 | `Ctrl+j` | Move focus down (vimi) |
 | `Ctrl+k` | Move focus up (vimi) |
 | `Ctrl+l` | Move focus right (vimi) |
+| `Space+sv` | Vertical split (vimi) |
+| `Space+sh` | Horizontal split (vimi) |
+| `Space+sx` | Close current split (vimi) |
+| `Space+se` | Equalize all split sizes (vimi) |
 | `:q` / `Space+q` | Close current split |
+
+### Resizing Splits
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+w >` | Increase width |
+| `Ctrl+w <` | Decrease width |
+| `Ctrl+w +` | Increase height |
+| `Ctrl+w -` | Decrease height |
+| `Space+se` | Equalize all splits (vimi) |
+| `{n}Ctrl+w >` | Increase width by n columns (e.g. `5Ctrl+w >`) |
 
 ---
 
@@ -396,6 +432,42 @@ Command mode alternatives:
 - `:wq` or `ZZ` — save and quit
 - `:q!` or `ZQ` — quit without saving
 - `:wqa` — save all buffers and quit
+
+### Splits
+
+| Key | Action |
+|-----|--------|
+| `Space+sv` | Open vertical split |
+| `Space+sh` | Open horizontal split |
+| `Space+sx` | Close current split |
+| `Space+se` | Equalize all split sizes |
+
+### Alternate Buffer
+
+| Key | Action |
+|-----|--------|
+| `Space+.` | Jump to last open buffer (toggle between two files) |
+
+This is different from `Space+bn` / `Space+bp` — it goes to the specific buffer you had open before, not the next one in the list. Ideal for toggling between implementation and test file.
+
+### Terminal
+
+| Key | Action |
+|-----|--------|
+| `Space+t` | Open integrated terminal (horizontal split) |
+
+Inside the terminal, press `Ctrl+\` then `Ctrl+n` to return to Normal mode and navigate away.
+
+### Quickfix List
+
+The quickfix list collects positions across the project — populated automatically by `Space+/` (ripgrep), `Space+d` (diagnostics), `:grep`, and `:make`.
+
+| Key | Action |
+|-----|--------|
+| `Space+co` | Open quickfix list |
+| `Space+cc` | Close quickfix list |
+| `Space+cn` | Jump to next item |
+| `Space+cp` | Jump to previous item |
 
 ### Search Highlight
 

@@ -175,3 +175,24 @@ nnoremap <leader>N :NERDTreeFind<CR>
 nnoremap <leader>p :Files<CR>
 nnoremap <leader>/ :Rg<CR>
 nnoremap <leader>bb :Buffers<CR>
+
+" Split management
+nnoremap <leader>sv :vsp<CR>
+nnoremap <leader>sh :sp<CR>
+nnoremap <leader>sx :q<CR>
+nnoremap <leader>se <C-w>=
+
+" Alternate between last two buffers
+nnoremap <leader>. <C-^>
+
+" Format document
+nnoremap <leader>f :ALEFix<CR>
+
+" Integrated terminal
+nnoremap <leader>t :terminal<CR>
+
+" Quickfix list
+nnoremap <leader>co :copen<CR>
+nnoremap <leader>cc :cclose<CR>
+nnoremap <leader>cn :cnext<CR>
+nnoremap <leader>cp :cprev<CR>

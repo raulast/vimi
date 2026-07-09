@@ -146,8 +146,18 @@ function vimi { vim -u "$HOME/.rast/.vim/vimrc" $args }
 | `Space+p` | Fuzzy file search |
 | `Space+/` | Search inside files (ripgrep) |
 | `Space+bb` | List open buffers |
+| `Space+bn` / `Space+bp` | Next / previous buffer |
+| `Space+bd` | Close buffer |
+| `Space+.` | Alternate to last buffer |
+| `Space+sv` / `Space+sh` | Vertical / horizontal split |
+| `Space+sx` | Close current split |
+| `Space+se` | Equalize split sizes |
 | `Space+h` | Clear search highlight |
 | `Space+w` / `Space+q` | Save / quit |
+| `Space+t` | Open integrated terminal |
+| `Space+f` | Format document |
+| `Space+co` / `Space+cc` | Open / close quickfix list |
+| `Space+cn` / `Space+cp` | Next / previous quickfix item |
 | `gd` | Go to definition |
 | `K` | Show documentation |
 | `Space+rn` | Rename symbol |
