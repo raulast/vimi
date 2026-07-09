@@ -129,7 +129,7 @@ function Test-VimInstalled {
 # VIM VERSION DETECTION
 # ==========================================
 function Get-VimVersion {
-    $raw = vim --version 2>$null | Select-Object -First 1
+    $raw = (vim --version 2>&1) | Select-Object -First 1
     if ($raw -match '(\d+)\.(\d+)(?:\.(\d+))?') {
         return @{
             Major = [int]$Matches[1]
@@ -249,7 +249,8 @@ function Write-Vimrc {
     $content = Get-Content $tmpPath -Raw
     $newBlock = "let g:coc_global_extensions = [`n" + ($extLines -join "`n") + "`n  \\ ]"
     $content = $content -replace '(?s)let g:coc_global_extensions = \[.*?\\ \]', $newBlock
-    Set-Content -Path $VimrcPath -Value $content -Encoding UTF8
+    # Write without BOM — PS5 Set-Content -Encoding UTF8 writes BOM which breaks Vim
+    [System.IO.File]::WriteAllText($VimrcPath, $content, [System.Text.UTF8Encoding]::new($false))
 
     Remove-Item $tmpPath -Force
     Write-VimSuccess "vimrc written (CoC stack, langs: $($SelectedLangs -join ', '))."
