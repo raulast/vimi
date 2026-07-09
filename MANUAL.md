@@ -511,6 +511,13 @@ These are Ex commands available only in the CoC stack:
 | `:CocUpdate` | Update all installed extensions |
 | `:CocRestart` | Restart CoC server |
 
+CoC-only keybindings:
+
+| Key | Action |
+|-----|--------|
+| `Ctrl+f` | Scroll down inside hover/doc popup (falls back to page down) |
+| `Ctrl+b` | Scroll up inside hover/doc popup (falls back to page up) |
+
 ### LSP-Only Commands (Vim 8)
 
 | Command | Action |

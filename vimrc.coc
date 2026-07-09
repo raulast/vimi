@@ -151,6 +151,10 @@ inoremap <expr> <Tab>   coc#pum#visible() ? coc#pum#next(1) : "\<Tab>"
 inoremap <expr> <S-Tab> coc#pum#visible() ? coc#pum#prev(1) : "\<S-Tab>"
 inoremap <expr> <CR>    coc#pum#visible() ? coc#pum#confirm() : "\<CR>"
 
+" Scroll inside hover/documentation float popup (falls back to page scroll when no float is open)
+nnoremap <expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+nnoremap <expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+
 " ==========================================
 " 9. PLUGIN KEYMAPS
 " ==========================================
