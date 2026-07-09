@@ -527,6 +527,8 @@ CoC-only keybindings:
 | `:ALEInfo` | Show ALE linter info for current file |
 | `:ALEFix` | Run auto-fixers (e.g. prettier, gofmt) |
 
+To scroll inside the hover popup on the LSP stack: press `K` twice — first press opens the popup, second press moves focus inside it. Then use normal Vim keys (`j/k`, `Ctrl+f/b`, etc.) to scroll. Press `q` to close.
+
 ### Which stack am I on?
 
 Run `:version` inside vimi. If Vim is 9.0.0438 or newer, you're on CoC. If older, you're on LSP.
