@@ -305,16 +305,16 @@ write_vimrc() {
         if [ -n "$_ext" ]; then
             # Flush previous line (so we can omit trailing comma on last)
             if [ -n "$_last_ext" ]; then
-                printf "  \\\\ '%s',\n" "$_last_ext" >> "$_exts_file"
+                printf "  \\ '%s',\n" "$_last_ext" >> "$_exts_file"
             fi
             _last_ext="$_ext"
         fi
     done
     # Write last entry without trailing comma
     if [ -n "$_last_ext" ]; then
-        printf "  \\\\ '%s'\n" "$_last_ext" >> "$_exts_file"
+        printf "  \\ '%s'\n" "$_last_ext" >> "$_exts_file"
     fi
-    printf '  \\ ]\n' >> "$_exts_file"
+    printf "  \\ ]\n" >> "$_exts_file"
 
     # Replace the static block in the downloaded vimrc using line-by-line processing
     _in_block=0
