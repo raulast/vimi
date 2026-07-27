@@ -27,6 +27,7 @@ syntax on
 set number
 set relativenumber
 set mouse=a
+set backspace=indent,eol,start
 if has('win32') || has('win64')
     set clipboard=unnamed
 else
