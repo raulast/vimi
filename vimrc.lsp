@@ -69,6 +69,9 @@ nnoremap <C-l> <C-w>l
 " Clear search highlight
 nnoremap <leader>h :nohlsearch<CR>
 
+" Toggle word wrap (wrap + linebreak always in sync)
+nnoremap <Leader>W :if &wrap \| set nowrap nolinebreak \| else \| set wrap linebreak \| endif<CR>
+
 " Buffer navigation
 nnoremap <leader>bn :bnext<CR>
 nnoremap <leader>bp :bprevious<CR>
