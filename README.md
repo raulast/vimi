@@ -153,7 +153,7 @@ function vimi { vim -u "$HOME/.rast/.vim/vimrc" $args }
 | `Space+sx` | Close current split |
 | `Space+se` | Equalize split sizes |
 | `Space+h` | Clear search highlight |
-| `Space+w` / `Space+q` | Save / quit |
+| `Space+W` | Toggle word wrap (keeps wrap + linebreak in sync) |
 | `Space+t` | Open integrated terminal |
 | `Space+f` | Format document |
 | `Space+co` / `Space+cc` | Open / close quickfix list |

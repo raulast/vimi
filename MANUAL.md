@@ -59,6 +59,7 @@ All keybindings at a glance. Leader key is `Space`.
 | `n / N` | Next / previous match |
 | `* / #` | Search word under cursor (fwd / bwd) |
 | `Space+h` | Clear search highlight (vimi) |
+| `Space+W` | Toggle word wrap (keeps wrap + linebreak in sync) |
 | `:%s/old/new/g` | Replace all in file |
 | `:%s/old/new/gc` | Replace all — confirm each |
 
@@ -307,6 +308,7 @@ vimi is configured with **persistent undo** — undo history survives closing an
 | `*` | Search forward for word under cursor |
 | `#` | Search backward for word under cursor |
 | `Space+h` | Clear search highlight (vimi) |
+| `Space+W` | Toggle word wrap (keeps wrap + linebreak in sync) |
 
 Searches are case-insensitive by default. To force case-sensitive, append `\C` to the pattern: `/MyFunc\C`.
 
@@ -474,6 +476,7 @@ The quickfix list collects positions across the project — populated automatica
 | Key | Action |
 |-----|--------|
 | `Space+h` | Clear search highlight |
+| `Space+W` | Toggle word wrap (keeps wrap + linebreak in sync) |
 
 ---
 
