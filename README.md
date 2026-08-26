@@ -122,6 +122,8 @@ All files are placed exclusively under `~/.rast/.vim/`. Nothing is written outsi
 | [fzf.vim](https://github.com/junegunn/fzf.vim) | Fuzzy file & content search |
 | [coc.nvim](https://github.com/neoclide/coc.nvim) | IntelliSense engine — Vim 9.0.0438+ (requires Node.js) |
 | [vim-lsp](https://github.com/prabirshrestha/vim-lsp) + [asyncomplete](https://github.com/prabirshrestha/asyncomplete.vim) + [ale](https://github.com/dense-analysis/ale) | IntelliSense engine — Vim 8 (no Node.js required) |
+| [vim-fugitive](https://github.com/tpope/vim-fugitive) | Git worktree — status, diff, blame, log, push |
+| [vim-gitgutter](https://github.com/airblade/vim-gitgutter) | Git hunk indicators in the sign column |
 
 **Shell alias / function added:**
 
@@ -164,6 +166,15 @@ function vimi { vim -u "$HOME/.rast/.vim/vimrc" $args }
 | `Space+ca` | Code action |
 | `[g` / `]g` | Navigate diagnostics |
 | `Space+d` | Diagnostics list |
+| `Space+gs` | Git status (fugitive) |
+| `Space+gd` | Git diff current file |
+| `Space+gb` | Git blame |
+| `Space+gl` | Git log (oneline) |
+| `Space+gp` | Git push |
+| `]h` / `[h` | Next / previous git hunk |
+| `Space+ghs` | Stage hunk under cursor |
+| `Space+ghu` | Undo hunk under cursor |
+| `Space+ghp` | Preview hunk under cursor |
 
 All IntelliSense keybindings work on both stacks (CoC and LSP) — same keys, different backend. See [MANUAL.md](MANUAL.md) for the full reference.
 

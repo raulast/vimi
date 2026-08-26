@@ -625,3 +625,47 @@ Enter scroll mode with `Ctrl+s`, then:
 **Use `.` constantly**: the dot command repeats your last change. Make a change once, then `.` to repeat it anywhere.
 
 **`:help` is excellent**: type `:help <topic>` inside Vim for authoritative documentation. Example: `:help motion`, `:help registers`.
+
+---
+
+## Git Integration
+
+vimi ships two complementary git plugins:
+
+- **vim-fugitive** — full git worktree panel: status, diff, blame, log, push
+- **vim-gitgutter** — inline hunk indicators (`+`, `-`, `~`) in the sign column
+
+### Fugitive — Worktree
+
+| Key | Action |
+|-----|--------|
+| `Space+gs` | Open git status panel |
+| `Space+gd` | Diff current file against HEAD |
+| `Space+gb` | Git blame (inline annotations) |
+| `Space+gl` | Git log (oneline) |
+| `Space+gp` | Git push |
+
+Inside the fugitive status panel:
+- `s` — stage file/hunk under cursor
+- `u` — unstage file/hunk
+- `=` — toggle inline diff
+- `cc` — create commit
+- `q` — close panel
+
+### Gitgutter — Hunk Navigation
+
+| Key | Action |
+|-----|--------|
+| `]h` | Next hunk |
+| `[h` | Previous hunk |
+| `Space+ghs` | Stage hunk under cursor |
+| `Space+ghu` | Undo hunk under cursor |
+| `Space+ghp` | Preview hunk under cursor |
+
+Hunk indicators in the sign column:
+
+| Symbol | Meaning |
+|--------|---------|
+| `+` | Added line |
+| `-` | Removed line |
+| `~` | Modified line |

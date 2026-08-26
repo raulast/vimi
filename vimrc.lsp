@@ -107,6 +107,10 @@ Plug 'prabirshrestha/asyncomplete-lsp.vim'
 " Linting + diagnostics (replaces CoC diagnostics on Vim 8)
 Plug 'dense-analysis/ale'
 
+" Git integration
+Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'
+
 call plug#end()
 
 " ==========================================
@@ -204,3 +208,17 @@ nnoremap <leader>co :copen<CR>
 nnoremap <leader>cc :cclose<CR>
 nnoremap <leader>cn :cnext<CR>
 nnoremap <leader>cp :cprev<CR>
+
+" Git — fugitive
+nnoremap <leader>gs :Git<CR>
+nnoremap <leader>gd :Gdiffsplit<CR>
+nnoremap <leader>gb :Git blame<CR>
+nnoremap <leader>gl :Git log --oneline<CR>
+nnoremap <leader>gp :Git push<CR>
+
+" Git — gitgutter (navigate hunks)
+nnoremap ]h :GitGutterNextHunk<CR>
+nnoremap [h :GitGutterPrevHunk<CR>
+nnoremap <leader>ghs :GitGutterStageHunk<CR>
+nnoremap <leader>ghu :GitGutterUndoHunk<CR>
+nnoremap <leader>ghp :GitGutterPreviewHunk<CR>
